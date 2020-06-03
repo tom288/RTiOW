@@ -8,6 +8,7 @@ using namespace std;
 #include "shader.hpp"
 #include "camera.hpp"
 #include "texture.hpp"
+#include "ray.hpp"
 
 // Keyboard input callback
 void keyCallback(GLFWwindow* win, int key, int scancode, int action, int mods)
@@ -63,7 +64,7 @@ GLFWwindow* makeWindow(const char* title)
     else win = glfwCreateWindow(WIN_W, WIN_H, title, nullptr, nullptr);
 
     glfwMakeContextCurrent(win);
-    glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    // glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // Register callbacks
     glfwSetKeyCallback(win, keyCallback);
@@ -97,7 +98,6 @@ GLFWwindow* makeWindow(const char* title)
     return win;
 }
 
-
 //
 GLubyte* draw()
 {
@@ -106,9 +106,13 @@ GLubyte* draw()
     {
         for (size_t column = 0; column < WIN_W; ++column)
         {
-            pixels[(row * WIN_W + column) * 3] = (255 * row) / WIN_H;
-            pixels[(row * WIN_W + column) * 3 + 1] = (255 * column) / WIN_W;
-            pixels[(row * WIN_W + column) * 3 + 2] = 100;
+            glm::vec3 color(row / double(WIN_H), column / double(WIN_W), 0.4);
+
+            color *= 255.999;
+            for (size_t c = 0; c < 3; ++c)
+            {
+                pixels[(row * WIN_W + column) * 3 + c] = color[c];
+            }
         }
     }
 
@@ -125,8 +129,8 @@ int main()
         return 1;
     }
 
-    Texture texture = Texture();
     Shader shader("textured");
+    Texture texture;
 
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glfwGetCursorPos(win, &xold, &yold);

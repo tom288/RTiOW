@@ -72,7 +72,7 @@ class Texture
     // Prepare for use
     void bind()
     {
-        // glActiveTexture(GL_TEXTURE0); // Necessary when multiple textures are in use
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, tex);
     }
 
