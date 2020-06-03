@@ -1,0 +1,6 @@
+@echo off
+
+echo CLEANING...
+del glew32.dll
+del launch.exe
+echo CLOSING...
