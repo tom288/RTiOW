@@ -98,15 +98,30 @@ GLFWwindow* makeWindow(const char* title)
     return win;
 }
 
-glm::dvec3 raycast(Ray ray)
+bool hitSphere(const glm::dvec3& center, const double& radius, const Ray& ray)
 {
+    glm::dvec3 org = ray.org - center;
+    double a = dot(ray.dir, ray.dir);
+    double b = 2.0 * dot(org, ray.dir);
+    double c = dot(org, org) - radius * radius;
+    double discriminant = b * b - 4 * a * c;
+    return discriminant > 0;
+}
+
+glm::dvec3 raycast(const Ray& ray)
+{
+    if (hitSphere(glm::dvec3(0.0, 0.0, -1.0), 0.5, ray))
+    {
+        return glm::dvec3(1, 0, 0);
+    }
+
     double y = glm::normalize(ray.dir).y;
     // Range -1..1
     y += 1.0;
     // Range 0..2
     y /= 2.0;
     // Range 0..1
-    return glm::dvec3(1.0 - y * 0.5, 1.0 - y * 0.3, 1.0);
+    return glm::mix(glm::dvec3(1.0), glm::dvec3(0.5, 0.7, 1.0), y);
 }
 
 //
@@ -128,12 +143,15 @@ GLubyte* draw()
     {
         for (size_t column = 0; column < WIN_W; ++column)
         {
-            double u = double(column) / (WIN_W - 1);
-            double v = double(row) / (WIN_H - 1);
+#if 0
+            glm::dvec3 color(row / double(WIN_H), column / double(WIN_W), 100);
+#else
+            double u = column / double(WIN_W - 1);
+            double v = row / double(WIN_H - 1);
             Ray ray(org, lowerLeft + u * horizontal + v * vertical - org);
 
             glm::dvec3 color = raycast(ray);
-
+#endif
             color *= 255.999;
             for (size_t c = 0; c < 3; ++c)
             {
