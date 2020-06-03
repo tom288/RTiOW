@@ -2,11 +2,11 @@
 #define GLOBAL_H_
 
 // Use the entire primary monitor
-#define FULLSCREEN 1
+#define FULLSCREEN 0
 
 // Windowed screen resolution
-#define WIN_W 1920
-#define WIN_H 1080
+#define WIN_W 800
+#define WIN_H 600
 
 // Vertical sync
 #define VSYNC 1

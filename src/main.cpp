@@ -7,6 +7,7 @@ using namespace std;
 #include "global.hpp"
 #include "shader.hpp"
 #include "camera.hpp"
+#include "texture.hpp"
 
 // Keyboard input callback
 void keyCallback(GLFWwindow* win, int key, int scancode, int action, int mods)
@@ -71,8 +72,8 @@ GLFWwindow* makeWindow(const char* title)
     glfwSetScrollCallback(win, scrollCallback);
 
     // Ignore hidden triangles
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
+    // glEnable(GL_CULL_FACE);
+    // glEnable(GL_DEPTH_TEST);
 
     // Configure vertical sync
     if (!VSYNC) glfwSwapInterval(0);
@@ -96,6 +97,24 @@ GLFWwindow* makeWindow(const char* title)
     return win;
 }
 
+
+//
+GLubyte* draw()
+{
+    GLubyte* pixels = new GLubyte[WIN_W * WIN_H * 3];
+    for (size_t row = 0; row < WIN_H; ++row)
+    {
+        for (size_t column = 0; column < WIN_W; ++column)
+        {
+            pixels[(row * WIN_W + column) * 3] = (255 * row) / WIN_H;
+            pixels[(row * WIN_W + column) * 3 + 1] = (255 * column) / WIN_W;
+            pixels[(row * WIN_W + column) * 3 + 2] = 100;
+        }
+    }
+
+    return pixels;
+}
+
 // Launches the program
 int main()
 {
@@ -106,7 +125,8 @@ int main()
         return 1;
     }
 
-    Shader shader("basic");
+    Texture texture = Texture();
+    Shader shader("textured");
 
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glfwGetCursorPos(win, &xold, &yold);
@@ -139,10 +159,15 @@ int main()
                 - glfwGetKey(win, GLFW_KEY_S);
         // TODO
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT); // | GL_DEPTH_BUFFER_BIT);
 
+        GLubyte* pixels = draw();
+        texture.fill(WIN_W, WIN_H, pixels);
+        delete[] pixels;
+
+        texture.bind();
         shader.use();
-        // TODO
+        texture.draw();
 
         glfwSwapBuffers(win);
         glfwPollEvents();
