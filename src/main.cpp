@@ -98,15 +98,41 @@ GLFWwindow* makeWindow(const char* title)
     return win;
 }
 
+glm::dvec3 raycast(Ray ray)
+{
+    double y = glm::normalize(ray.dir).y;
+    // Range -1..1
+    y += 1.0;
+    // Range 0..2
+    y /= 2.0;
+    // Range 0..1
+    return glm::dvec3(1.0 - y * 0.5, 1.0 - y * 0.3, 1.0);
+}
+
 //
 GLubyte* draw()
 {
+    double vHeight = 2.0;
+    double vWidth = vHeight * WIN_W / WIN_H;
+    double fLength = 1.0;
+
+    glm::dvec3 org(0, 0, 0);
+    glm::dvec3 horizontal = glm::dvec3(vWidth, 0.0, 0.0);
+    glm::dvec3 vertical = glm::dvec3(0.0, vHeight, 0.0);
+    glm::dvec3 lowerLeft = org - horizontal / 2.0
+                               - vertical   / 2.0
+                               - glm::dvec3(0.0, 0.0, fLength);
+
     GLubyte* pixels = new GLubyte[WIN_W * WIN_H * 3];
     for (size_t row = 0; row < WIN_H; ++row)
     {
         for (size_t column = 0; column < WIN_W; ++column)
         {
-            glm::vec3 color(row / double(WIN_H), column / double(WIN_W), 0.4);
+            double u = double(column) / (WIN_W - 1);
+            double v = double(row) / (WIN_H - 1);
+            Ray ray(org, lowerLeft + u * horizontal + v * vertical - org);
+
+            glm::dvec3 color = raycast(ray);
 
             color *= 255.999;
             for (size_t c = 0; c < 3; ++c)
@@ -135,7 +161,7 @@ int main()
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glfwGetCursorPos(win, &xold, &yold);
     size_t frames = 0;
-    double deltaTime, oldTime = glfwGetTime(), elapsed = 0;
+    double deltaTime, oldTime = glfwGetTime(), elapsed = 0.0;
 
     while (!glfwWindowShouldClose(win))
     {
@@ -148,7 +174,7 @@ int main()
         {
             cout << "T = " << 1000.0 * elapsed / frames << " ms\t"
                << "FPS = " << frames / elapsed << endl;
-            elapsed = 0;
+            elapsed = 0.0;
             frames = 0;
         }
 

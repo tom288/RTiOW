@@ -94,7 +94,7 @@ class Camera
             }
         }
 
-        velocity *= pow(FRICTION, time * (1 - glm::length(acceleration)));
+        velocity *= pow(FRICTION, time * (1.0 - glm::length(acceleration)));
         position += (vel + velocity) * time * 0.5;
 
         calcView();

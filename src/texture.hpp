@@ -84,6 +84,7 @@ class Texture
     }
 
 private:
+
     unsigned int tex, vbo, vao, ebo;
 };
 

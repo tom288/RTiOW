@@ -5,8 +5,8 @@
 #define FULLSCREEN 0
 
 // Windowed screen resolution
-#define WIN_W 800
-#define WIN_H 600
+#define WIN_W 1280
+#define WIN_H 720
 
 // Vertical sync
 #define VSYNC 1
