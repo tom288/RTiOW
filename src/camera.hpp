@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "global.hpp"
+#include "config.hpp"
 
 // Constants
 static const glm::dvec3 UP(0.0, 1.0, 0.0);

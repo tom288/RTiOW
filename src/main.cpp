@@ -4,12 +4,15 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/norm.hpp>
 #include <iostream>
-#include "global.hpp"
+#include <memory>
+#include "config.hpp"
 #include "shader.hpp"
 #include "camera.hpp"
 #include "texture.hpp"
 #include "ray.hpp"
+#include "sphere.hpp"
 #include "geometry.hpp"
+#include "utility.hpp"
 
 // Keyboard input callback
 void keyCallback(GLFWwindow* win, int key, int scancode, int action, int mods)
@@ -99,25 +102,12 @@ GLFWwindow* makeWindow(const char* title)
     return win;
 }
 
-double hitSphere(const glm::dvec3& mid, const double& rad, const Ray& ray)
+glm::dvec3 raycast(const Ray& ray, const Surface& world)
 {
-    glm::dvec3 org = ray.org - mid;
-    double a = glm::length2(ray.dir);
-    double b = dot(org, ray.dir);
-    double c = glm::length2(org) - rad * rad;
-    double discriminant = b * b - a * c;
-
-    if (discriminant < 0) return -1.0;
-    else return (b + sqrt(discriminant)) / -a;
-}
-
-glm::dvec3 raycast(const Ray& ray)
-{
-    double t = hitSphere(glm::dvec3(0.0, 0.0, -1.0), 0.5, ray);
-    if (t > 0.0)
+    RayHit hit;
+    if (world.hit(ray, 0.0, INF, hit))
     {
-        glm::dvec3 norm = glm::normalize(ray.at(t) - glm::dvec3(0.0, 0.0, -1.0));
-        return glm::dvec3(norm.x + 1.0, norm.y + 1.0, norm.z + 1.0) * 0.5;
+        return hit.norm * 0.5 + glm::dvec3(0.5, 0.5, 0.5);
     }
 
     double y = glm::normalize(ray.dir).y * 0.5 + 0.5;
@@ -138,6 +128,10 @@ GLubyte* draw()
                                - vertical   / 2.0
                                - glm::dvec3(0.0, 0.0, fLength);
 
+    Geometry world;
+    world.add(std::make_shared<Sphere>(glm::vec3(0.0, 0.0, -1.0), 0.5));
+    world.add(std::make_shared<Sphere>(glm::vec3(0.0, -100.5, -1.0), 100.0));
+
     GLubyte* pixels = new GLubyte[WIN_W * WIN_H * 3];
     for (size_t row = 0; row < WIN_H; ++row)
     {
@@ -150,7 +144,7 @@ GLubyte* draw()
             double v = row / double(WIN_H - 1);
             Ray ray(org, lowerLeft + u * horizontal + v * vertical - org);
 
-            glm::dvec3 color = raycast(ray);
+            glm::dvec3 color = raycast(ray, world);
 #endif
             color *= 255.999;
             for (size_t c = 0; c < 3; ++c)

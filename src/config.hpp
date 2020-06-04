@@ -1,5 +1,5 @@
-#ifndef GLOBAL_H_
-#define GLOBAL_H_
+#ifndef CONFIG_H_
+#define CONFIG_H_
 
 // Use the entire primary monitor
 #define FULLSCREEN 0
