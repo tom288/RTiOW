@@ -2,12 +2,14 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <glm/gtx/norm.hpp>
 #include <iostream>
 #include "global.hpp"
 #include "shader.hpp"
 #include "camera.hpp"
 #include "texture.hpp"
 #include "ray.hpp"
+#include "geometry.hpp"
 
 // Keyboard input callback
 void keyCallback(GLFWwindow* win, int key, int scancode, int action, int mods)
@@ -97,16 +99,16 @@ GLFWwindow* makeWindow(const char* title)
     return win;
 }
 
-double hitSphere(const glm::dvec3& center, const double& radius, const Ray& ray)
+double hitSphere(const glm::dvec3& mid, const double& rad, const Ray& ray)
 {
-    glm::dvec3 org = ray.org - center;
-    double a = dot(ray.dir, ray.dir);
-    double b = dot(org, ray.dir) * 0.5;
-    double c = dot(org, org) - radius * radius;
-    double discriminant = b * b - 4 * a * c;
+    glm::dvec3 org = ray.org - mid;
+    double a = glm::length2(ray.dir);
+    double b = dot(org, ray.dir);
+    double c = glm::length2(org) - rad * rad;
+    double discriminant = b * b - a * c;
 
     if (discriminant < 0) return -1.0;
-    else return (b + sqrt(discriminant)) / (a * -2.0);
+    else return (b + sqrt(discriminant)) / -a;
 }
 
 glm::dvec3 raycast(const Ray& ray)

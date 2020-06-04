@@ -1,5 +1,5 @@
-#ifndef SHADER_H
-#define SHADER_H
+#ifndef SHADER_H_
+#define SHADER_H_
 
 #include <iostream>
 #include <GL/glew.h>

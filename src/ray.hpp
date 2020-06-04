@@ -6,15 +6,15 @@
 class Ray
 { public:
 
+    glm::dvec3 org;
+    glm::dvec3 dir;
+
     Ray(const glm::dvec3& org, const glm::dvec3& dir) : org(org), dir(dir) { }
 
     glm::dvec3 at(double t) const
     {
         return org + t * dir;
     }
-
-    glm::dvec3 org;
-    glm::dvec3 dir;
 };
 
 #endif
