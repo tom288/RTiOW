@@ -5,6 +5,7 @@
 #include <glm/gtx/norm.hpp>
 #include <iostream>
 #include <memory>
+#include <math.h>
 #include "config.hpp"
 #include "shader.hpp"
 #include "camera.hpp"
@@ -52,7 +53,7 @@ GLFWwindow* makeWindow(const char* title)
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
     // Configure antialiasing
-    if (AA_X > 1) glfwWindowHint(GLFW_SAMPLES, AA_X);
+    // if (AA_X > 1) glfwWindowHint(GLFW_SAMPLES, AA_X);
 
 #ifdef __APPLE__
     // Fixes compilation on OS X
@@ -84,7 +85,7 @@ GLFWwindow* makeWindow(const char* title)
     if (!VSYNC) glfwSwapInterval(0);
 
     // Configure antialiasing
-    if (AA_X > 1) glEnable(GL_MULTISAMPLE);
+    // if (AA_X > 1) glEnable(GL_MULTISAMPLE);
 
     if (RAW_INPUT && glfwRawMouseMotionSupported())
     {
@@ -117,34 +118,45 @@ glm::dvec3 raycast(const Ray& ray, const Surface& world)
 //
 GLubyte* draw()
 {
-    double vHeight = 2.0;
-    double vWidth = vHeight * WIN_W / WIN_H;
-    double fLength = 1.0;
-
-    glm::dvec3 org(0, 0, 0);
-    glm::dvec3 horizontal = glm::dvec3(vWidth, 0.0, 0.0);
-    glm::dvec3 vertical = glm::dvec3(0.0, vHeight, 0.0);
-    glm::dvec3 lowerLeft = org - horizontal / 2.0
-                               - vertical   / 2.0
-                               - glm::dvec3(0.0, 0.0, fLength);
-
+    Camera cam;
     Geometry world;
     world.add(std::make_shared<Sphere>(glm::vec3(0.0, 0.0, -1.0), 0.5));
     world.add(std::make_shared<Sphere>(glm::vec3(0.0, -100.5, -1.0), 100.0));
+
+    const int samples = glm::max(1, AA_X);
+    const int root = sqrt(samples);
 
     GLubyte* pixels = new GLubyte[WIN_W * WIN_H * 3];
     for (size_t row = 0; row < WIN_H; ++row)
     {
         for (size_t column = 0; column < WIN_W; ++column)
         {
-#if 0
-            glm::dvec3 color(row / double(WIN_H), column / double(WIN_W), 100);
+#if 1
+            glm::dvec3 color(row / double(WIN_H), column / double(WIN_W), 0.5);
 #else
-            double u = column / double(WIN_W - 1);
-            double v = row / double(WIN_H - 1);
-            Ray ray(org, lowerLeft + u * horizontal + v * vertical - org);
+            glm::dvec3 color(0.0);
 
-            glm::dvec3 color = raycast(ray, world);
+            for (int s = 0; s < samples; ++s)
+            {
+                double x;
+                double y;
+                if (STRATIFY)
+                {
+                    x = (0.5 + s) / samples;
+                    y = fmod(s, root) / root + (0.5 / samples);
+                }
+                else
+                {
+                    x = random();
+                    y = random();
+                }
+                double u = (column + x) / double(WIN_W);
+                double v = (row + y) / double(WIN_H);
+                Ray ray = cam.getRay(u, v);
+                color += raycast(ray, world);
+            }
+
+            color /= samples;
 #endif
             color *= 255.999;
             for (size_t c = 0; c < 3; ++c)

@@ -5,6 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "config.hpp"
+#include "ray.hpp"
 
 // Constants
 static const glm::dvec3 UP(0.0, 1.0, 0.0);
@@ -23,7 +24,18 @@ class Camera
     // Initialises properties
     Camera()
     {
-        position = velocity = glm::dvec3(0.0, 0.0, 0.0);
+        double vHeight = 2.0;
+        double vWidth = vHeight * WIN_W / WIN_H;
+        double fLength = 1.0;
+
+        position = glm::dvec3(0.0, 0.0, 0.0);
+        horizontal = glm::dvec3(vWidth, 0.0, 0.0);
+        vertical = glm::dvec3(0.0, vHeight, 0.0);
+        lowerLeft = position - horizontal / 2.0
+                             - vertical   / 2.0
+                             - glm::dvec3(0.0, 0.0, fLength);
+
+        velocity = glm::dvec3(0.0, 0.0, 0.0);
         sens = 0.1;
 
         setAngle(0.0, 0.0);
@@ -100,6 +112,12 @@ class Camera
         calcView();
     }
 
+    // Returns the ray corresponding with the given texture coordinates
+    Ray getRay(double u, double v) const
+    {
+        return Ray(position, lowerLeft + u * horizontal + v * vertical - position);
+    }
+
 private:
 
     // Kinematics
@@ -111,6 +129,11 @@ private:
     double pitch;
     double sens;
     double fov;
+
+    // Populated by constructor
+    glm::dvec3 horizontal;
+    glm::dvec3 vertical;
+    glm::dvec3 lowerLeft;
 
     // Populated by calcVectors
     glm::dvec3 look;
