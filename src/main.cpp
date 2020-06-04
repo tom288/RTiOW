@@ -3,7 +3,6 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <iostream>
-using namespace std;
 #include "global.hpp"
 #include "shader.hpp"
 #include "camera.hpp"
@@ -98,29 +97,28 @@ GLFWwindow* makeWindow(const char* title)
     return win;
 }
 
-bool hitSphere(const glm::dvec3& center, const double& radius, const Ray& ray)
+double hitSphere(const glm::dvec3& center, const double& radius, const Ray& ray)
 {
     glm::dvec3 org = ray.org - center;
     double a = dot(ray.dir, ray.dir);
-    double b = 2.0 * dot(org, ray.dir);
+    double b = dot(org, ray.dir) * 0.5;
     double c = dot(org, org) - radius * radius;
     double discriminant = b * b - 4 * a * c;
-    return discriminant > 0;
+
+    if (discriminant < 0) return -1.0;
+    else return (b + sqrt(discriminant)) / (a * -2.0);
 }
 
 glm::dvec3 raycast(const Ray& ray)
 {
-    if (hitSphere(glm::dvec3(0.0, 0.0, -1.0), 0.5, ray))
+    double t = hitSphere(glm::dvec3(0.0, 0.0, -1.0), 0.5, ray);
+    if (t > 0.0)
     {
-        return glm::dvec3(1, 0, 0);
+        glm::dvec3 norm = glm::normalize(ray.at(t) - glm::dvec3(0.0, 0.0, -1.0));
+        return glm::dvec3(norm.x + 1.0, norm.y + 1.0, norm.z + 1.0) * 0.5;
     }
 
-    double y = glm::normalize(ray.dir).y;
-    // Range -1..1
-    y += 1.0;
-    // Range 0..2
-    y /= 2.0;
-    // Range 0..1
+    double y = glm::normalize(ray.dir).y * 0.5 + 0.5;
     return glm::mix(glm::dvec3(1.0), glm::dvec3(0.5, 0.7, 1.0), y);
 }
 
@@ -190,8 +188,8 @@ int main()
         // Runs every 1 second on average
         if (elapsed > 1 - elapsed / ++frames / 2)
         {
-            cout << "T = " << 1000.0 * elapsed / frames << " ms\t"
-               << "FPS = " << frames / elapsed << endl;
+            std::cout << "T = " << 1000.0 * elapsed / frames << " ms\t"
+                    << "FPS = " << frames / elapsed << std::endl;
             elapsed = 0.0;
             frames = 0;
         }

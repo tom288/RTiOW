@@ -8,7 +8,7 @@ class Ray
 
     Ray(const glm::dvec3& org, const glm::dvec3& dir) : org(org), dir(dir) { }
 
-    glm::dvec3 at(double t)
+    glm::dvec3 at(double t) const
     {
         return org + t * dir;
     }
