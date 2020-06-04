@@ -12,9 +12,9 @@
 #define VSYNC 1
 
 // Multisample anti-aliasing multiplier
-#define AA_X 1
+#define AA_X 4
 
-// Use a regular sampling grid
+// Use a regular sampling pattern
 #define STRATIFY 0
 
 // Raw mouse input

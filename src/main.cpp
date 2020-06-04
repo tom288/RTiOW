@@ -106,7 +106,8 @@ GLFWwindow* makeWindow(const char* title)
 glm::dvec3 raycast(const Ray& ray, const Surface& world)
 {
     RayHit hit;
-    if (world.hit(ray, 0.0, INF, hit))
+    // A non-zero minimum t value kills shadow acne
+    if (world.hit(ray, 0.0001, INF, hit))
     {
         return hit.norm * 0.5 + glm::dvec3(0.5, 0.5, 0.5);
     }
@@ -131,7 +132,7 @@ GLubyte* draw()
     {
         for (size_t column = 0; column < WIN_W; ++column)
         {
-#if 1
+#if 0
             glm::dvec3 color(row / double(WIN_H), column / double(WIN_W), 0.5);
 #else
             glm::dvec3 color(0.0);
@@ -142,6 +143,7 @@ GLubyte* draw()
                 double y;
                 if (STRATIFY)
                 {
+                    // TODO Replace this zigzag pattern with a better one
                     x = (0.5 + s) / samples;
                     y = fmod(s, root) / root + (0.5 / samples);
                 }
@@ -157,6 +159,8 @@ GLubyte* draw()
             }
 
             color /= samples;
+            // Gamma correction
+            // color = glm::sqrt(color);
 #endif
             color *= 255.999;
             for (size_t c = 0; c < 3; ++c)
