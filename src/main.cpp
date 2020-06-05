@@ -103,13 +103,21 @@ GLFWwindow* makeWindow(const char* title)
     return win;
 }
 
-glm::dvec3 raycast(const Ray& ray, const Surface& world)
+// TODO begin at depth 0 and count up instead
+// TODO multiple bounces on hit and lower AA_X for more efficient rendering
+glm::dvec3 raycast(const Ray& ray, const Surface& world, int depth)
 {
+    if (depth <= 0) return glm::dvec3(0.0, 0.0, 0.0);
     RayHit hit;
+
     // A non-zero minimum t value kills shadow acne
     if (world.hit(ray, 0.0001, INF, hit))
     {
-        return hit.norm * 0.5 + glm::dvec3(0.5, 0.5, 0.5);
+        glm::dvec3 target = hit.point;
+        if (LAMBERTIAN) target += hit.norm + randomUnit();
+        else target += randomHemi(hit.norm);
+
+        return raycast(Ray(hit.point, target - hit.point), world, depth - 1) * 0.5;
     }
 
     double y = glm::normalize(ray.dir).y * 0.5 + 0.5;
@@ -155,12 +163,12 @@ GLubyte* draw()
                 double u = (column + x) / double(WIN_W);
                 double v = (row + y) / double(WIN_H);
                 Ray ray = cam.getRay(u, v);
-                color += raycast(ray, world);
+                color += raycast(ray, world, RAY_DEPTH);
             }
 
             color /= samples;
             // Gamma correction
-            // color = glm::sqrt(color);
+            color = glm::sqrt(color);
 #endif
             color *= 255.999;
             for (size_t c = 0; c < 3; ++c)

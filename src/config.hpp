@@ -20,4 +20,10 @@
 // Raw mouse input
 #define RAW_INPUT 1
 
+// Maximum diffuse tree depth
+#define RAY_DEPTH 50
+
+// Lambertian diffuse
+#define LAMBERTIAN 1
+
 #endif
