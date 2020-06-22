@@ -133,13 +133,18 @@ GLubyte* draw()
     Camera cam;
     Geometry world;
     world.add(std::make_shared<Sphere>(glm::dvec3(0.0, 0.0, -1.0), 0.5,
-              std::make_shared<Diffuse>(glm::dvec3(0.7, 0.3, 0.3))));
+              std::make_shared<Diffuse>(glm::dvec3(0.1, 0.2, 0.5))));
+
     world.add(std::make_shared<Sphere>(glm::dvec3(0.0, -100.5, -1.0), 100,
               std::make_shared<Diffuse>(glm::dvec3(0.8, 0.8, 0.0))));
+
     world.add(std::make_shared<Sphere>(glm::dvec3(1.0, 0.0, -1.0), 0.5,
               std::make_shared<Metal>(glm::dvec3(0.8, 0.6, 0.2), 0.3)));
+
     world.add(std::make_shared<Sphere>(glm::dvec3(-1.0, 0.0, -1.0), 0.5,
-              std::make_shared<Metal>(glm::dvec3(0.8, 0.8, 0.8), 1.0)));
+              std::make_shared<Dielectric>(1.5)));
+    world.add(std::make_shared<Sphere>(glm::dvec3(-1.0, 0.0, -1.0), -0.45,
+              std::make_shared<Dielectric>(1.5)));
 
     const int samples = glm::max(1, AA_X);
     const int root = sqrt(samples);

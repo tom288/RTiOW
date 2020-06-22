@@ -21,7 +21,7 @@ inline double random(double min, double max)
 }
 
 // Return a double in range 0 <= x < 1
-inline double random_double()
+inline double randomDouble()
 {
     static std::uniform_real_distribution<double> distribution(0.0, 1.0);
     static std::mt19937 generator;
@@ -43,6 +43,23 @@ glm::dvec3 randomHemi(const glm::dvec3& norm)
     glm::dvec3 unit = randomUnit();
     if (glm::dot(unit, norm) < 0.0) unit *= -1.0;
     return unit;
+}
+
+// GLM provides this
+glm::dvec3 refract(const glm::dvec3& i, const glm::dvec3& n, double eta)
+{
+    double cosTheta = -glm::dot(i, n);
+    glm::dvec3 para = eta * (i + cosTheta * n);
+    glm::dvec3 perp = -sqrt(1.0 - glm::length2(para)) * n;
+    return para + perp;
+}
+
+// Christophe Schlick's polynomial approximation to dielectric reflectivity
+double schlick(double cosine, double index)
+{
+    double r0 = (1 - index) / (1 + index);
+    r0 = r0 * r0;
+    return r0 + (1 - r0) * pow((1 - cosine), 5);
 }
 
 #endif
