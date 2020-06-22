@@ -14,6 +14,7 @@
 #include "sphere.hpp"
 #include "geometry.hpp"
 #include "utility.hpp"
+#include "material.hpp"
 
 // Keyboard input callback
 void keyCallback(GLFWwindow* win, int key, int scancode, int action, int mods)
@@ -107,17 +108,19 @@ GLFWwindow* makeWindow(const char* title)
 // TODO multiple bounces on hit and lower AA_X for more efficient rendering
 glm::dvec3 raycast(const Ray& ray, const Surface& world, int depth)
 {
-    if (depth <= 0) return glm::dvec3(0.0, 0.0, 0.0);
+    if (depth <= 0) return glm::dvec3(0.0);
     RayHit hit;
 
     // A non-zero minimum t value kills shadow acne
     if (world.hit(ray, 0.0001, INF, hit))
     {
-        glm::dvec3 target = hit.point;
-        if (LAMBERTIAN) target += hit.norm + randomUnit();
-        else target += randomHemi(hit.norm);
-
-        return raycast(Ray(hit.point, target - hit.point), world, depth - 1) * 0.5;
+        Ray scattered(glm::dvec3(0.0), glm::dvec3(0.0));
+        glm::dvec3 atten;
+        if (hit.mat->scatter(ray, hit, atten, scattered))
+        {
+            return atten * raycast(scattered, world, depth - 1);
+        }
+        return glm::dvec3(0.0);
     }
 
     double y = glm::normalize(ray.dir).y * 0.5 + 0.5;
@@ -129,8 +132,14 @@ GLubyte* draw()
 {
     Camera cam;
     Geometry world;
-    world.add(std::make_shared<Sphere>(glm::vec3(0.0, 0.0, -1.0), 0.5));
-    world.add(std::make_shared<Sphere>(glm::vec3(0.0, -100.5, -1.0), 100.0));
+    world.add(std::make_shared<Sphere>(glm::dvec3(0.0, 0.0, -1.0), 0.5,
+              std::make_shared<Diffuse>(glm::dvec3(0.7, 0.3, 0.3))));
+    world.add(std::make_shared<Sphere>(glm::dvec3(0.0, -100.5, -1.0), 100,
+              std::make_shared<Diffuse>(glm::dvec3(0.8, 0.8, 0.0))));
+    world.add(std::make_shared<Sphere>(glm::dvec3(1.0, 0.0, -1.0), 0.5,
+              std::make_shared<Metal>(glm::dvec3(0.8, 0.6, 0.2), 0.3)));
+    world.add(std::make_shared<Sphere>(glm::dvec3(-1.0, 0.0, -1.0), 0.5,
+              std::make_shared<Metal>(glm::dvec3(0.8, 0.8, 0.8), 1.0)));
 
     const int samples = glm::max(1, AA_X);
     const int root = sqrt(samples);

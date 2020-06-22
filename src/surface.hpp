@@ -2,11 +2,13 @@
 #define SURFACE_H_
 
 #include "ray.hpp"
+class Material;
 
 struct RayHit
 {
     glm::dvec3 point;
     glm::dvec3 norm;
+    std::shared_ptr<Material> mat;
     double t;
     bool front;
 

@@ -8,9 +8,10 @@ class Sphere: public Surface
 
     glm::dvec3 mid;
     double rad;
+    std::shared_ptr<Material> mat;
 
     Sphere() { }
-    Sphere(glm::dvec3 mid, double rad) : mid(mid), rad(rad) { }
+    Sphere(glm::dvec3 mid, double rad, std::shared_ptr<Material> mat) : mid(mid), rad(rad), mat(mat) { }
 
     bool hit(const Ray& ray, double tMin, double tMax, RayHit& hit) const
     {
@@ -32,6 +33,7 @@ class Sphere: public Surface
                     hit.point = ray.at(hit.t);
                     glm::dvec3 outwardNorm = (hit.point - mid) / rad;
                     hit.setNorm(ray, outwardNorm);
+                    hit.mat = mat;
                     return true;
                 }
             }
