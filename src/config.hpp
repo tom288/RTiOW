@@ -5,17 +5,17 @@
 #define FULLSCREEN 0
 
 // Windowed screen resolution
-#define WIN_W 1280
-#define WIN_H 720
+#define WIN_W 1920
+#define WIN_H 1080
 
 // Vertical sync
 #define VSYNC 1
 
 // Multisample anti-aliasing multiplier
-#define AA_X 4
+#define AA_X 1
 
 // Use a regular sampling pattern
-#define STRATIFY 0
+#define STRATIFY 1
 
 // Raw mouse input
 #define RAW_INPUT 1
@@ -25,5 +25,8 @@
 
 // Lambertian diffuse
 #define LAMBERTIAN 1
+
+// Vertical field of view
+#define VFOV 40
 
 #endif

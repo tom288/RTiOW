@@ -50,11 +50,10 @@ glm::dvec3 refract(const glm::dvec3& i, const glm::dvec3& n, double eta)
 {
     double cosTheta = -glm::dot(i, n);
     glm::dvec3 para = eta * (i + cosTheta * n);
-    glm::dvec3 perp = -sqrt(1.0 - glm::length2(para)) * n;
-    return para + perp;
+    return para - sqrt(1.0 - glm::length2(para)) * n;
 }
 
-// Christophe Schlick's polynomial approximation to dielectric reflectivity
+// Christophe Schlick's polynomial approximation for dielectric reflectivity
 double schlick(double cosine, double index)
 {
     double r0 = (1 - index) / (1 + index);

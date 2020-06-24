@@ -8,13 +8,13 @@
 #include <math.h>
 #include "config.hpp"
 #include "shader.hpp"
-#include "camera.hpp"
 #include "texture.hpp"
 #include "ray.hpp"
 #include "sphere.hpp"
 #include "geometry.hpp"
 #include "utility.hpp"
 #include "material.hpp"
+#include "camera.hpp"
 
 // Keyboard input callback
 void keyCallback(GLFWwindow* win, int key, int scancode, int action, int mods)
@@ -130,8 +130,9 @@ glm::dvec3 raycast(const Ray& ray, const Surface& world, int depth)
 //
 GLubyte* draw()
 {
-    Camera cam;
+    Camera cam(glm::dvec3(-2,2,1), glm::dvec3(0,0,-1));
     Geometry world;
+
     world.add(std::make_shared<Sphere>(glm::dvec3(0.0, 0.0, -1.0), 0.5,
               std::make_shared<Diffuse>(glm::dvec3(0.1, 0.2, 0.5))));
 

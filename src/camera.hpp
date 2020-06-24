@@ -21,101 +21,24 @@ static const double FRICTION = 0.0001;
 class Camera
 { public:
 
-    // Initialises properties
-    Camera()
+    Camera(const glm::dvec3& position, const glm::dvec3& lookAt) : position(position)
     {
-        double vHeight = 2.0;
-        double vWidth = vHeight * WIN_W / WIN_H;
-        double fLength = 1.0;
+        const double theta = glm::radians(double(VFOV));
+        const double height = glm::tan(theta / 2.0) * 2.0;
+        const double width = height * WIN_W / WIN_H;
 
-        position = glm::dvec3(0.0, 0.0, 0.0);
-        horizontal = glm::dvec3(vWidth, 0.0, 0.0);
-        vertical = glm::dvec3(0.0, vHeight, 0.0);
-        lowerLeft = position - horizontal / 2.0
-                             - vertical   / 2.0
-                             - glm::dvec3(0.0, 0.0, fLength);
+        look = glm::normalize(position - lookAt);
+        right = glm::normalize(glm::cross(UP, look));
+        above = glm::normalize(glm::cross(look, right));
 
-        velocity = glm::dvec3(0.0, 0.0, 0.0);
-        sens = 0.1;
-
-        setAngle(0.0, 0.0);
-        setFOV(90.0);
+        zont = width * right;
+        vert = height * above;
+        lowerLeft = position - (zont + vert) / 2.0 - look;
     }
 
-    // Returns the view matrix
-    glm::mat4 getView() const
+    Ray getRay(const double& u, const double& v) const
     {
-        return view;
-    }
-
-    // Returns the projection matrix
-    glm::mat4 getProjection() const
-    {
-        return projection;
-    }
-
-    glm::vec3 getPosition() const
-    {
-        return position;
-    }
-
-    // Uses mouse input to reorient the camera
-    void moveMouse(double dx, double dy)
-    {
-        setAngle(yaw + dx * sens, pitch + dy * sens);
-    }
-
-    // Changes the camera angle and recalculates the view matrix + vectors
-    void setAngle(double yaw, double pitch)
-    {
-        this->yaw = glm::mod(yaw + 180.0, 360.0) - 180.0;
-        this->pitch = glm::clamp(pitch, -PITCH_MAX, PITCH_MAX);
-
-        calcVectors();
-    }
-
-    // Changes the FOV and recalculates the projection matrix
-    void setFOV(double fov)
-    {
-        this->fov = glm::radians(glm::clamp(fov, FOV_MIN, FOV_MAX));
-
-        calcProjection();
-    }
-
-    // Moves the camera according to velocity, input and time since last step
-    void step(glm::dvec3 input, double time)
-    {
-        glm::dvec3 vel(velocity);
-        glm::dvec3 acceleration(0.0, 0.0, 0.0);
-        acceleration += input.x * right;
-        acceleration += input.y * UP;
-        acceleration += input.z * look;
-
-        if (glm::length(acceleration) > 0.0)
-        {
-            if (glm::length(acceleration) > 1.0)
-            {
-                acceleration = glm::normalize(acceleration);
-            }
-
-            velocity += acceleration * time * ACC;
-
-            if (glm::length(velocity) > SPEED_MAX)
-            {
-                velocity = glm::normalize(velocity) * SPEED_MAX;
-            }
-        }
-
-        velocity *= pow(FRICTION, time * (1.0 - glm::length(acceleration)));
-        position += (vel + velocity) * time * 0.5;
-
-        calcView();
-    }
-
-    // Returns the ray corresponding with the given texture coordinates
-    Ray getRay(double u, double v) const
-    {
-        return Ray(position, lowerLeft + u * horizontal + v * vertical - position);
+        return Ray(position, lowerLeft + u * zont + v * vert - position);
     }
 
 private:
@@ -124,50 +47,15 @@ private:
     glm::dvec3 position;
     glm::dvec3 velocity;
 
-    // Aim
-    double yaw;
-    double pitch;
-    double sens;
-    double fov;
-
-    // Populated by constructor
-    glm::dvec3 horizontal;
-    glm::dvec3 vertical;
-    glm::dvec3 lowerLeft;
-
-    // Populated by calcVectors
+    // Direction
     glm::dvec3 look;
     glm::dvec3 right;
-    glm::dvec3 front;
+    glm::dvec3 above;
 
-    // Populated by calcView
-    glm::mat4 view;
-
-    // Populated by calcProjection
-    glm::mat4 projection;
-
-    // Calculates the look, right and front vectors
-    void calcVectors()
-    {
-        double y = glm::radians(yaw), p = glm::radians(pitch), c = cos(p);
-        look  = glm::normalize(glm::dvec3(cos(y) * c, sin(p), sin(y) * c));
-        right = glm::normalize(glm::cross(look, UP));
-        front = glm::normalize(glm::cross(UP, right));
-
-        calcView();
-    }
-
-    // Calculates the new view matrix
-    void calcView()
-    {
-        view = glm::lookAt(position, position + look, UP);
-    }
-
-    // Calculates the new projection matrix
-    void calcProjection()
-    {
-        projection = glm::perspective(fov, double(WIN_W) / WIN_H, NEAR, FAR);
-    }
+    // Raytracing
+    glm::dvec3 lowerLeft;
+    glm::dvec3 zont;
+    glm::dvec3 vert;
 };
 
 #endif
