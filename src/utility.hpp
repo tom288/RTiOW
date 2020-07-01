@@ -61,4 +61,9 @@ double schlick(double cosine, double index)
     return r0 + (1 - r0) * pow((1 - cosine), 5);
 }
 
+glm::dvec3 randomColor()
+{
+    return glm::dvec3(random(), random(), random());
+}
+
 #endif

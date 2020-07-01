@@ -5,8 +5,8 @@
 #define FULLSCREEN 0
 
 // Windowed screen resolution
-#define WIN_W 1920
-#define WIN_H 1080
+#define WIN_W 1280
+#define WIN_H 720
 
 // Vertical sync
 #define VSYNC 1
@@ -27,6 +27,6 @@
 #define LAMBERTIAN 1
 
 // Vertical field of view
-#define VFOV 40
+#define VFOV 20
 
 #endif

@@ -130,27 +130,61 @@ glm::dvec3 raycast(const Ray& ray, const Surface& world, int depth)
 //
 GLubyte* draw()
 {
-    Camera cam(glm::dvec3(-2,2,1), glm::dvec3(0,0,-1));
+    Camera cam(glm::dvec3(13.0, 2.0, 3.0), glm::dvec3(0.0, 0.0, 0.0));
     Geometry world;
 
-    world.add(std::make_shared<Sphere>(glm::dvec3(0.0, 0.0, -1.0), 0.5,
-              std::make_shared<Diffuse>(glm::dvec3(0.1, 0.2, 0.5))));
+    auto matGround = std::make_shared<Diffuse>(glm::dvec3(0.5, 0.5, 0.5));
+    world.add(std::make_shared<Sphere>(glm::dvec3(0.0, -1000.0, 0.0), 1000.0, matGround));
 
-    world.add(std::make_shared<Sphere>(glm::dvec3(0.0, -100.5, -1.0), 100,
-              std::make_shared<Diffuse>(glm::dvec3(0.8, 0.8, 0.0))));
+    for (int a = -11; a < 11; a++)
+    {
+        for (int b = -11; b < 11; b++)
+        {
+            double r = random();
+            glm::dvec3 center(a + 0.9 * random(), 0.2, b + 0.9 * random());
 
-    world.add(std::make_shared<Sphere>(glm::dvec3(1.0, 0.0, -1.0), 0.5,
-              std::make_shared<Metal>(glm::dvec3(0.8, 0.6, 0.2), 0.3)));
+            if ((center - glm::dvec3(4, 0.2, 0)).length() > 0.9)
+            {
+                std::shared_ptr<Material> sphere_material;
 
-    world.add(std::make_shared<Sphere>(glm::dvec3(-1.0, 0.0, -1.0), 0.5,
-              std::make_shared<Dielectric>(1.5)));
-    world.add(std::make_shared<Sphere>(glm::dvec3(-1.0, 0.0, -1.0), -0.45,
-              std::make_shared<Dielectric>(1.5)));
+                if (r < 0.8)
+                {
+                    // diffuse
+                    glm::dvec3 albedo = randomColor() * randomColor();
+                    sphere_material = std::make_shared<Diffuse>(albedo);
+                    world.add(std::make_shared<Sphere>(center, 0.2, sphere_material));
+                }
+                else if (r < 0.95)
+                {
+                    // metal
+                    glm::dvec3 albedo = randomColor();
+                    double fuzz = random() * 0.5;
+                    sphere_material = std::make_shared<Metal>(albedo, fuzz);
+                    world.add(std::make_shared<Sphere>(center, 0.2, sphere_material));
+                }
+                else
+                {
+                    // glass
+                    sphere_material = std::make_shared<Dielectric>(1.5);
+                    world.add(std::make_shared<Sphere>(center, 0.2, sphere_material));
+                }
+            }
+        }
+    }
+
+    auto mat1 = std::make_shared<Dielectric>(1.5);
+    world.add(std::make_shared<Sphere>(glm::dvec3(0, 1, 0), 1.0, mat1));
+
+    auto mat2 = std::make_shared<Diffuse>(glm::dvec3(0.4, 0.2, 0.1));
+    world.add(std::make_shared<Sphere>(glm::dvec3(-4, 1, 0), 1.0, mat2));
+
+    auto mat3 = std::make_shared<Metal>(glm::dvec3(0.7, 0.6, 0.5), 0.0);
+    world.add(std::make_shared<Sphere>(glm::dvec3(4, 1, 0), 1.0, mat3));
 
     const int samples = glm::max(1, AA_X);
     const int root = sqrt(samples);
-
     GLubyte* pixels = new GLubyte[WIN_W * WIN_H * 3];
+
     for (size_t row = 0; row < WIN_H; ++row)
     {
         for (size_t column = 0; column < WIN_W; ++column)
@@ -199,7 +233,7 @@ GLubyte* draw()
 // Launches the program
 int main()
 {
-    GLFWwindow* win = makeWindow(":D");
+    GLFWwindow* win = makeWindow("Ray Tracing In One Weekend");
     if (!win)
     {
         glfwTerminate();
